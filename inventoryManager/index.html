@@ -38,7 +38,7 @@
                     var request = doc.request;
                     if(request){
                         if(request == "gotInventory"){
-                            var items = request.items;
+                            var items = doc.items;
                             if(items){
                                 for(var i in items){
                                     console.log(i, items[i]);
