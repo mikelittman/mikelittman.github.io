@@ -7,6 +7,8 @@
                 height: 100%;
                 width: 100%;
                 background-color: rgba(200,200,200,.5);
+                margin: 0;
+                padding: 0;
             }
             .content{
                 max-width: 600px;
@@ -25,9 +27,10 @@
         <script>
             $(function(){
                 var makeRequest = function(params){
-                    $("<script>")
-                        .attr('src', window.location.hash.substr(1) + '?' + JSON.stringify(params))
-                        .appendTo($(document.body));
+                    var request = window.location.hash.substr(1) + '?' + JSON.stringify(params);
+                    var script = document.createElement('script');
+                    script.src = request;
+                    document.body.appendChild(script);
                 };
 
                 $('#refreshInventory').click(function(){
