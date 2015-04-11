@@ -33,6 +33,10 @@
                     document.body.appendChild(script);
                 };
 
+                var doThing = function(doc){
+                    console.log(doc);
+                };
+
                 $('#refreshInventory').click(function(){
                     makeRequest({'request': 'getInventory'});
                 });
