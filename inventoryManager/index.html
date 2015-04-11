@@ -2,9 +2,38 @@
 <html lang="en">
     <head>
         <title>Inventory Manager</title>
-
+        <style>
+            html, body{
+                height: 100%;
+                width: 100%;
+                background-color: rgba(200,200,200,.5);
+            }
+            .content{
+                max-width: 600px;
+                margin: auto;
+            }
+        </style>
     </head>
     <body>
+        <div class="content">
+            <ul class="inventoryList">
 
+            </ul>
+            <button id="refreshInventory">Refresh Inventory</button>
+        </div>
+        <script src="/assets/js/libs/jquery-2.1.3.min.js"></script>
+        <script>
+            $(function(){
+                var makeRequest = function(params){
+                    $("<script>")
+                        .attr('src', window.location.hash.substr(1) + '?' + JSON.stringify(params))
+                        .appendTo($(document.body));
+                };
+
+                $('#refreshInventory').click(function(){
+                    makeRequest({'request': 'getInventory'});
+                });
+            });
+        </script>
     </body>
 </html>
