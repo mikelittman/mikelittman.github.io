@@ -36,7 +36,7 @@
 
                 window.invCache = {};
 
-                var renderItems = function(){
+                window.renderItems = function(){
                     var list = $('.inventoryList');
 
                     list.html('');
@@ -54,7 +54,7 @@
                         if(request == "gotInventory"){
                             var items = doc.items;
                             invCache.items = items;
-                            renderItems();
+                            window.renderItems();
                         }
                     }
                 };
