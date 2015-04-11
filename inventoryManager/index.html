@@ -34,16 +34,27 @@
                     document.body.appendChild(script);
                 };
 
+                window.invCache = {};
+
+                var renderItems = function(){
+                    var list = $('.inventoryList');
+
+                    list.html('');
+                    for(var item in window.invCache.items){
+                        list.html.append(
+                            $('<li>').text(item)
+                                .attr('uuid', window.invCache.items[item])
+                        );
+                    }
+                };
+
                 window.doThing = function(doc){
                     var request = doc.request;
                     if(request){
                         if(request == "gotInventory"){
                             var items = doc.items;
-                            if(items){
-                                for(var i in items){
-                                    console.log(i, items[i]);
-                                }
-                            }
+                            invCache.items = items;
+                            renderItems();
                         }
                     }
                 };
