@@ -3,19 +3,23 @@
     <head>
         <title>Inventory Manager</title>
         <style>
-            html, body{
+            html{
                 height: 100%;
                 width: 100%;
-                background-color: rgba(200,200,200,.5);
                 margin: 0;
                 padding: 0;
+            }
+            body{
+                margin: 0;
+                padding: 0;
+                background-color: rgba(200,200,200,.5);
             }
             .content{
                 max-width: 600px;
                 margin: auto;
             }
             .import{
-                height: 400px;
+                height: 100px;
             }
             textarea{
                 height: 100%;
@@ -29,7 +33,11 @@
                 <textarea></textarea>
             </div>
             <button id="refreshInventory">Refresh Inventory</button>
+            <button id="importSettings">Theme Settings</button>
             <br>
+            <div class="list">
+
+            </div>
             <ul id="inventoryList"></ul>
         </div>
         <script src="/assets/js/libs/jquery-2.1.3.min.js"></script>
