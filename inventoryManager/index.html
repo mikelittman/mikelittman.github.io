@@ -41,7 +41,7 @@
 
                     list.html('');
                     for(var item in window.invCache.items){
-                        list.html.append(
+                        list.append(
                             $('<li>').text(item)
                                 .attr('uuid', window.invCache.items[item])
                         );
