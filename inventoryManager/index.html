@@ -2,6 +2,7 @@
 <html lang="en">
     <head>
         <title>Inventory Manager</title>
+        <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <style>
             html{
                 height: 100%;
@@ -25,20 +26,85 @@
                 height: 100%;
                 width: 100%;
             }
+            .buttons{
+                padding: 10px;
+            }
+            .panes .pane{
+                vertical-align: top;
+                display: inline-block;
+                width: 290px;
+            }
+            .hide{
+                visibility: hidden;
+                display: none;
+            }
         </style>
     </head>
     <body>
         <div class="content">
+            <h2>Inventory Manager</h2>
             <div class="import">
-                <textarea></textarea>
+                <textarea placeholder="Put import JSON here"></textarea>
             </div>
-            <button id="refreshInventory">Refresh Inventory</button>
-            <button id="importSettings">Theme Settings</button>
             <br>
-            <div class="list">
-
+            <div class="buttons">
+                <button id="refreshInventory"><i class="fa fa-refresh"></i> Refresh Inventory</button>
+                <button id="importSettings"><i class="fa fa-arrow-circle-down"></i> Import</button>
+                <button id="newTheme"><i class="fa fa-plus"></i> New</button>
             </div>
-            <ul id="inventoryList"></ul>
+            <br>
+            <div class="panes">
+                <div class="pane">
+                    <input id="inventoryFilter" placeholder="Filter">
+                    <div>
+                        <button id="inventoryClear"><i class="fa fa-eraser"></i> Clear</button>
+                        <button id="inventoryAdd"><i class="fa fa-arrow-circle-right"></i> Add</button>
+                    </div>
+                    <ul id="inventoryList"></ul>
+                </div>
+                <div class="pane">
+                    <div>
+                        <select id="themeList">
+                            <option>
+                                Select a theme
+                            </option>
+                        </select>
+                        <button id="themeSave"><i class="fa fa-save"></i> Save</button>
+                    </div>
+
+                    <br>
+                    <input placeholder="Theme Name" id="themeName">
+                    <br>
+                    <div>
+                        <h4>Jetpack</h4>
+                        <div>
+                            <span>Diffuse</span>
+                            <select class="textureList" id="jetpackDiffuse"></select>
+                        </div>
+                        <div>
+                            <span>Normal</span>
+                            <select class="textureList" id="jetpackNormal"></select>
+                        </div>
+                        <div>
+                            <span>Specular</span>
+                            <select class="textureList" id="jetpackSpecular"></select>
+                        </div>
+                        <h4>Wings</h4>
+                        <div>
+                            <span>Diffuse</span>
+                            <select class="textureList" id="wingsDiffuse"></select>
+                        </div>
+                        <div>
+                            <span>Normal</span>
+                            <select class="textureList" id="wingsNormal"></select>
+                        </div>
+                        <div>
+                            <span>Specular</span>
+                            <select class="textureList" id="wingsSpecular"></select>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
         <script src="/assets/js/libs/jquery-2.1.3.min.js"></script>
         <script>
@@ -51,23 +117,47 @@
                 };
 
                 window.invCache = {};
+                window.themeConfig = {};
 
                 window.renderItems = function(){
-                    var list = $('#inventoryList');
+                    var list = $('#inventoryList'),
+                        tList = $('.textureList');
 
                     list.html('');
+                    tList.html('');
                     for(var item in window.invCache.items){
                         list.append(
                             $('<li>')
                                 .text(item)
+                                .attr('searchKey', item.toLowerCase())
                                 .append(
                                     $('<input>')
                                         .attr('type', 'checkbox')
                                         .attr('uuid', window.invCache.items[item])
                                 )
                             );
+
+                        tList.append(
+                            $('<option>')
+                                .text(item)
+                                .attr('searchKey', item.toLowerCase())
+                                .attr('value', window.invCache.items[item])
+                        );
                     }
                 };
+
+
+                window.refreshThemes = function(){
+                    $('#themeList option:not(:first-child)').remove();
+                    for(var theme in window.themeConfig){
+                        var doc = window.themeConfig[theme];
+
+                    }
+                };
+
+
+                window.refreshThemes();
+
 
                 window.doThing = function(doc){
                     var request = doc.request;
@@ -80,8 +170,28 @@
                     }
                 };
 
+                $('#inventoryClear').click(function(){
+                    $('#inventoryList li input[type="checkbox"]')
+                        .removeAttr('checked');
+                });
+
                 $('#refreshInventory').click(function(){
                     makeRequest({'request': 'getInventory'});
+                });
+
+                $('#inventoryFilter').on('keyup', function(){
+                    var val = $(this).val().trim(),
+                        search = '[searchKey*="'+val.toLowerCase()+'"]',
+                        selector = '#inventoryList li';
+                    $(selector).removeClass('hide');
+                    $('.textureList option').removeClass('hide');
+                    if(val !== ""){
+                        $(selector).addClass('hide');
+                        $('.textureList option').addClass('hide');
+                        $(selector+search).removeClass('hide');
+                        $('.textureList option'+search).removeClass('hide');
+
+                    }
                 });
             });
         </script>
