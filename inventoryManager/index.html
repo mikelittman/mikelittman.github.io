@@ -2,7 +2,8 @@
 <html lang="en">
     <head>
         <title>Inventory Manager</title>
-        <link href='http://fonts.googleapis.com/css?family=Lato:300,400,700' rel='stylesheet' type='text/css'>
+        <link href="/assets/js/libs/autocomplete/jquery.autocomplete.css" rel="stylesheet" type="text/css">
+        <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css">
         <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
         <style>
             html{
@@ -18,7 +19,7 @@
                 background-color: rgba(200,200,200,.5);
             }
             .content{
-                max-width: 600px;
+                max-width: 620px;
                 margin: auto;
             }
             .import{
@@ -34,7 +35,8 @@
             .panes .pane{
                 vertical-align: top;
                 display: inline-block;
-                width: 290px;
+                width: 280px;
+                padding: 10px;
             }
             .hide{
                 visibility: hidden;
@@ -59,6 +61,9 @@
             }
             ul li{
                 list-style-type: none;
+            }
+            input{
+                width: 100%;
             }
 
         </style>
@@ -105,34 +110,40 @@
                         <h4>Jetpack</h4>
                         <div>
                             <span>Diffuse</span>
-                            <select class="textureList" id="jetpackDiffuse"></select>
-                            <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jDLock"></i>
+                            <!-- <select class="textureList" id="jetpackDiffuse"></select> -->
+                            <input type="text" class="textureInput" id="jetpackDiffuse">
+                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jDLock"></i> -->
                         </div>
                         <div>
                             <span>Normal</span>
-                            <select class="textureList" id="jetpackNormal"></select>
-                            <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jNLock"></i>
+                            <!-- <select class="textureList" id="jetpackNormal"></select> -->
+                            <input type="text" class="textureInput" id="jetpackNormal">
+                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jNLock"></i> -->
                         </div>
                         <div>
                             <span>Specular</span>
-                            <select class="textureList" id="jetpackSpecular"></select>
-                            <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jSLock"></i>
+                            <!-- <select class="textureList" id="jetpackSpecular"></select> -->
+                            <input type="text" class="textureInput" id="jetpackSpecular">
+                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jSLock"></i> -->
                         </div>
                         <h4>Wings</h4>
                         <div>
                             <span>Diffuse</span>
-                            <select class="textureList" id="wingsDiffuse"></select>
-                            <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wDLock"></i>
+                            <!-- <select class="textureList" id="wingsDiffuse"></select> -->
+                            <input type="text" class="textureInput" id="wingsDiffuse">
+                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wDLock"></i> -->
                         </div>
                         <div>
                             <span>Normal</span>
-                            <select class="textureList" id="wingsNormal"></select>
-                            <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wNLock"></i>
+                            <!-- <select class="textureList" id="wingsNormal"></select> -->
+                            <input type="text" class="textureInput" id="wingsNormal">
+                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wNLock"></i> -->
                         </div>
                         <div>
                             <span>Specular</span>
-                            <select class="textureList" id="wingsSpecular"></select>
-                            <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wSLock"></i>
+                            <!-- <select class="textureList" id="wingsSpecular"></select> -->
+                            <input type="text" class="textureInput" id="wingsSpecular">
+                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wSLock"></i> -->
                         </div>
                     </div>
                 </div>
@@ -142,6 +153,7 @@
             </footer>
         </div>
         <script src="/assets/js/libs/jquery-2.1.3.min.js"></script>
+        <script src="/assets/js/libs/autocomplete/jquery.autocomplete.js"></script>
         <script>
             $(function(){
                 var makeRequest = function(params){
@@ -152,7 +164,34 @@
                 };
 
                 window.invCache = {};
+                window.reverseCache = {};
                 window.themeConfig = {};
+
+                //$('.textureInput').autocomplete({});
+
+
+                var acCompare = function(value,query){
+                    var score = 0;
+                    value = value.toLowerCase();
+
+                    var tokens = query.toLowerCase().split(' ');
+                    for(var i in tokens){
+                        score += value.indexOf(tokens[i]);
+                    }
+
+                    console.log(value,query,score);
+
+                    return score >= 0;
+                    //return value.toLowerCase().indexOf(query.toLowerCase()) > -1;
+                };
+
+                $('.textureInput').each(function(index){
+                    $(this).attr('tabindex', index+1)
+                        .autocomplete({
+                            //equal: acCompare,
+                            //valid: acCompare
+                        });
+                });
 
                 //Load cache
                 if(window.localStorage){
@@ -163,11 +202,11 @@
                 }
 
                 window.renderItems = function(){
-                    var list = $('#inventoryList'),
-                        tList = $('.textureList');
-
+                    var list = $('#inventoryList');
                     list.html('');
-                    tList.html('');
+
+                    var acList = [];
+
                     for(var item in window.invCache.items){
                         list.append(
                             $('<li>')
@@ -179,14 +218,19 @@
                                 // )
                                 .append(item)
                             );
-
-                        tList.append(
-                            $('<option>')
-                                .text(item)
-                                .attr('searchKey', item.toLowerCase())
-                                .attr('value', window.invCache.items[item])
-                        );
+                        // acList.push({
+                        //     id: window.invCache.items[item],
+                        //     title: item
+                        // });
+                        acList.push(item);
                     }
+
+                    //Configure autocomplete
+                    $('.textureInput').each(function(){
+                        $(this).autocomplete('options', {
+                            source: [acList]
+                        });
+                    });
                 };
 
 
@@ -221,6 +265,10 @@
                         if(request == "gotInventory"){
                             var items = doc.items;
                             invCache.items = items;
+
+                            for(var item in items){
+                                window.reverseCache[items[item]] = item;
+                            }
                             window.renderItems();
                             $('#themeList').trigger('change');
                         }
@@ -258,15 +306,17 @@
                         data = window.themeConfig[theme]
                         ;
 
-                    $.extend(true, data, {j:{}, w:{}});
+                    data = $.extend(true, data, {j:{}, w:{}});
+
+                    var rCache = window.reverseCache;
 
                     $('#themeName').val(theme);
-                    $('#jetpackDiffuse').val(data.j.d);
-                    $('#jetpackNormal').val(data.j.n);
-                    $('#jetpackSpecular').val(data.j.s);
-                    $('#wingsDiffuse').val(data.w.d);
-                    $('#wingsNormal').val(data.w.n);
-                    $('#wingsSpecular').val(data.w.s);
+                    $('#jetpackDiffuse').val(rCache[data.j.d]);
+                    $('#jetpackNormal').val(rCache[data.j.n]);
+                    $('#jetpackSpecular').val(rCache[data.j.s]);
+                    $('#wingsDiffuse').val(rCache[data.w.d]);
+                    $('#wingsNormal').val(rCache[data.w.n]);
+                    $('#wingsSpecular').val(rCache[data.w.s]);
                 });
 
                 $('#themeSave').click(function(){
@@ -279,16 +329,17 @@
                         alert("Cannot add theme, we need a name!");
                     }
                     else{
+                        var items = window.invCache.items;
                         window.themeConfig[nameVal] = {
                             j:{
-                                d: $('#jetpackDiffuse').val(),
-                                n: $('#jetpackNormal').val(),
-                                s: $('#jetpackSpecular').val()
+                                d: items[$('#jetpackDiffuse').val()],
+                                n: items[$('#jetpackNormal').val()],
+                                s: items[$('#jetpackSpecular').val()]
                             },
                             w:{
-                                d: $('#wingsDiffuse').val(),
-                                n: $('#wingsNormal').val(),
-                                s: $('#wingsSpecular').val()
+                                d: items[$('#wingsDiffuse').val()],
+                                n: items[$('#wingsNormal').val()],
+                                s: items[$('#wingsSpecular').val()]
                             }
                         };
 
@@ -312,20 +363,9 @@
                         search = '[searchKey*="'+val.toLowerCase()+'"]',
                         selector = '#inventoryList li';
                     $(selector).removeClass('hide');
-                    $('.textureList option').removeClass('hide');
                     if(val !== ""){
                         $(selector).addClass('hide');
-                        $('.textureList option').addClass('hide');
                         $(selector+search).removeClass('hide');
-
-                        $('.textureList option'+search).removeClass('hide');
-                        $('.textureList:not(.locked)').each(function(){
-                            var list = $(this),
-                                options = list.find(':not(.hide)');
-
-                            options.removeAttr('selected');
-                            options.first().attr('selected','selected');
-                        });
                     }
                 });
             });
