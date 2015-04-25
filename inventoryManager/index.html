@@ -165,7 +165,10 @@
 
                 window.invCache = {};
                 window.reverseCache = {};
-                window.themeConfig = {};
+                window.themeConfig = {
+                    themes: {},
+                    cache: []
+                };
 
                 //$('.textureInput').autocomplete({});
 
@@ -234,12 +237,15 @@
                 };
 
 
+                window.saveTheme = function(name, doc){
+                };
+
 
                 window.refreshThemes = function(){
                     var list = $('#themeList');
                     $('#themeList option:not(:first-child)').remove();
-                    for(var theme in window.themeConfig){
-                        var doc = window.themeConfig[theme];
+                    for(var theme in window.themeConfig.themes){
+                        var doc = window.themeConfig.themes[theme];
                         list.append(
                             $(document.createElement('option'))
                                 .attr('value', theme)
@@ -278,6 +284,7 @@
                 $('#trashCache').click(function(){
                     if(confirm("Are you sure you want to empty local cache?")){
                         window.localStorage.clear();
+                        window.refreshThemes();
                     }
                 });
 
@@ -287,8 +294,11 @@
 
                 $('#importSettings').click(function(){
                     var text = $('#jsonField').val();
+                    $('#jsonField').val('');
                     $.extend(true, window.themeConfig, JSON.parse(text));
                     window.saveCache();
+                    window.renderItems();
+                    window.refreshThemes();
                 });
 
                 $('.textureLock').change(function(){
@@ -303,7 +313,7 @@
 
                 $('#themeList').change(function(){
                     var theme = $(this).val(),
-                        data = window.themeConfig[theme]
+                        data = window.themeConfig.themes[theme]
                         ;
 
                     data = $.extend(true, data, {j:{}, w:{}});
@@ -330,7 +340,7 @@
                     }
                     else{
                         var items = window.invCache.items;
-                        window.themeConfig[nameVal] = {
+                        window.themeConfig.themes[nameVal] = {
                             j:{
                                 d: items[$('#jetpackDiffuse').val()],
                                 n: items[$('#jetpackNormal').val()],
