@@ -5,9 +5,9 @@ var gulp        = require('gulp'),
 
 gulp.task('serve', function(){
     browserSync({
+        open: false,
         server: {
-            baseDir: "./",
-            open: false
+            baseDir: "./"
         }
     });
 });

@@ -2,9 +2,9 @@
 <html lang="en">
     <head>
         <title>Inventory Manager</title>
-        <link href="/assets/js/libs/autocomplete/jquery.autocomplete.css" rel="stylesheet" type="text/css">
         <link href="http://fonts.googleapis.com/css?family=Lato:300,400,700" rel="stylesheet" type="text/css">
         <link href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/4.3.0/css/font-awesome.min.css" rel="stylesheet" type="text/css">
+        <link href="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet" type="text/css">
         <style>
             html{
                 height: 100%;
@@ -66,17 +66,61 @@
                 width: 100%;
             }
 
+            /* AUTOCOMPLETE */
+            .autocomplete{
+              width: 100%;
+              position: relative;
+            }
+
+            .autocomplete input{
+              font-size: 1.2em;
+              width: 100%;
+              padding:0.4em;
+            }
+
+            .autocomplete ul{
+              position: absolute;
+              left: 0;
+              width: 100%;
+              border-left: 1px solid #888;
+              border-right: 1px solid #888;
+              border-bottom: 1px solid #888;
+              z-index: 1;
+            }
+
+            .autocomplete li{
+              text-align: left;
+              list-style:none;
+              width: 100%;
+              padding:0.4em;
+              background-color: #fff;
+            }
+
+            .autocomplete li.active{
+              width: 100%;
+              background-color: #4bf;
+            }
+
+            .autocomplete .highlight {
+              background-color: #E2E2E2;
+            }
+
+            .autocomplete li.active .highlight {
+              background: #666;
+              color: #fff;
+            }
+
         </style>
     </head>
     <body>
-        <div class="content">
+        <div class="content" ng-app="inventoryManager" ng-controller="Manager as mgr">
             <h2>Inventory Manager</h2>
             <div class="import">
                 <textarea id="jsonField" placeholder="Put import JSON here"></textarea>
             </div>
             <br>
             <div class="buttons">
-                <button id="refreshInventory"><i class="fa fa-refresh"></i> Refresh Inventory</button>
+                <button id="refreshInventory" ng-click="refreshInventory()"><i class="fa fa-refresh"></i> Refresh Inventory</button>
                 <button id="importSettings"><i class="fa fa-arrow-circle-down"></i> Import</button>
                 <button id="exportSettings"><i class="fa fa-arrow-circle-up"></i> Export</button>
                 <button id="trashCache"><i class="fa fa-trash"></i> Empty Cache</button>
@@ -91,59 +135,58 @@
                         <!-- <button id="inventoryAdd"><i class="fa fa-arrow-circle-right"></i> Add</button> -->
                     </div>
                     <h4>Inventory</h4>
-                    <ul id="inventoryList"></ul>
+                    <ul id="inventoryList">
+                        <li ng-repeat="t in textures">
+                            {{ t.getName() }}
+                        </li>
+                    </ul>
                 </div>
                 <div class="pane">
                     <div>
                         <select id="themeList">
-                            <option>
-                                Select a theme
+                            <option ng-repeat="t in themes">
+                                {{ t.getName() }}
                             </option>
                         </select>
                         <button id="themeSave"><i class="fa fa-save"></i> Save</button>
                     </div>
 
                     <br>
-                    <input placeholder="Theme Name" id="themeName">
+                    <input placeholder="Theme Name" ng-model="fields.theme.name">
                     <br>
                     <div>
                         <h4>Jetpack</h4>
                         <div>
                             <span>Diffuse</span>
-                            <!-- <select class="textureList" id="jetpackDiffuse"></select> -->
-                            <input type="text" class="textureInput" id="jetpackDiffuse">
-                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jDLock"></i> -->
+                            <input type="text" ng-model="fields.textures.jetpack.diffuse" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Normal</span>
-                            <!-- <select class="textureList" id="jetpackNormal"></select> -->
-                            <input type="text" class="textureInput" id="jetpackNormal">
-                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jNLock"></i> -->
+                            <input type="text" ng-model="fields.textures.jetpack.normal" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Specular</span>
-                            <!-- <select class="textureList" id="jetpackSpecular"></select> -->
-                            <input type="text" class="textureInput" id="jetpackSpecular">
-                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="jSLock"></i> -->
+                            <input type="text" ng-model="fields.textures.jetpack.specular" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <h4>Wings</h4>
                         <div>
                             <span>Diffuse</span>
-                            <!-- <select class="textureList" id="wingsDiffuse"></select> -->
-                            <input type="text" class="textureInput" id="wingsDiffuse">
-                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wDLock"></i> -->
+                            <input type="text" ng-model="fields.textures.wing.diffuse" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Normal</span>
-                            <!-- <select class="textureList" id="wingsNormal"></select> -->
-                            <input type="text" class="textureInput" id="wingsNormal">
-                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wNLock"></i> -->
+                            <input type="text" ng-model="fields.textures.wing.normal" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Specular</span>
-                            <!-- <select class="textureList" id="wingsSpecular"></select> -->
-                            <input type="text" class="textureInput" id="wingsSpecular">
-                            <!-- <i class="fa fa-lock"><input class="textureLock" type="checkbox" id="wSLock"></i> -->
+                            <input type="text" ng-model="fields.textures.wing.specular" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                        </div>
+                        <h4>Icon</h4>
+                        <div>
+                            <input type="text" typeahead-on-select="iconChanged($item)" ng-model="fields.textures.icon.name" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                            <br>
+                            <canvas id="tiles" width="256" height="256"></canvas>
+                            <img id="tiles_ref" ng-src="{{ fields.textures.icon.path }}" style="visibility: hidden;" width="0" height="0">
                         </div>
                     </div>
                 </div>
@@ -152,233 +195,10 @@
                 &copy; Mike Littman 2015
             </footer>
         </div>
+        <script src="/assets/js/libs/angular.min.js"></script>
+        <script src="/assets/js/libs/ui-bootstrap-tpls-0.13.0.min.js"></script>
         <script src="/assets/js/libs/jquery-2.1.3.min.js"></script>
-        <script src="/assets/js/libs/autocomplete/jquery.autocomplete.js"></script>
-        <script>
-            $(function(){
-                var makeRequest = function(params){
-                    var request = window.location.hash.substr(1) + '?' + JSON.stringify(params);
-                    var script = document.createElement('script');
-                    script.src = request;
-                    document.body.appendChild(script);
-                };
-
-                window.invCache = {};
-                window.reverseCache = {};
-                window.themeConfig = {
-                    themes: {},
-                    cache: []
-                };
-
-                //$('.textureInput').autocomplete({});
-
-
-                var acCompare = function(value,query){
-                    var score = 0;
-                    value = value.toLowerCase();
-
-                    var tokens = query.toLowerCase().split(' ');
-                    for(var i in tokens){
-                        score += value.indexOf(tokens[i]);
-                    }
-
-                    console.log(value,query,score);
-
-                    return score >= 0;
-                    //return value.toLowerCase().indexOf(query.toLowerCase()) > -1;
-                };
-
-                $('.textureInput').each(function(index){
-                    $(this).attr('tabindex', index+1)
-                        .autocomplete({
-                            //equal: acCompare,
-                            //valid: acCompare
-                        });
-                });
-
-                //Load cache
-                if(window.localStorage){
-                    var cache = window.localStorage.getItem('themeConfig');
-                    if(cache && cache !== ""){
-                        window.themeConfig = JSON.parse(cache);
-                    }
-                }
-
-                window.renderItems = function(){
-                    var list = $('#inventoryList');
-                    list.html('');
-
-                    var acList = [];
-
-                    for(var item in window.invCache.items){
-                        list.append(
-                            $('<li>')
-                                .attr('searchKey', item.toLowerCase())
-                                // .append(
-                                //     $('<input>')
-                                //         .attr('type', 'checkbox')
-                                //         .attr('uuid', window.invCache.items[item])
-                                // )
-                                .append(item)
-                            );
-                        // acList.push({
-                        //     id: window.invCache.items[item],
-                        //     title: item
-                        // });
-                        acList.push(item);
-                    }
-
-                    //Configure autocomplete
-                    $('.textureInput').each(function(){
-                        $(this).autocomplete('options', {
-                            source: [acList]
-                        });
-                    });
-                };
-
-
-                window.saveTheme = function(name, doc){
-                };
-
-
-                window.refreshThemes = function(){
-                    var list = $('#themeList');
-                    $('#themeList option:not(:first-child)').remove();
-                    for(var theme in window.themeConfig.themes){
-                        var doc = window.themeConfig.themes[theme];
-                        list.append(
-                            $(document.createElement('option'))
-                                .attr('value', theme)
-                                .text(theme)
-                        );
-                    }
-                };
-
-
-                window.saveCache = function(){
-                    if(window.localStorage){
-                        window.localStorage.setItem('themeConfig', JSON.stringify(window.themeConfig));
-                    }
-                };
-
-
-                window.refreshThemes();
-
-
-                window.doThing = function(doc){
-                    var request = doc.request;
-                    if(request){
-                        if(request == "gotInventory"){
-                            var items = doc.items;
-                            invCache.items = items;
-
-                            for(var item in items){
-                                window.reverseCache[items[item]] = item;
-                            }
-                            window.renderItems();
-                            $('#themeList').trigger('change');
-                        }
-                    }
-                };
-
-                $('#trashCache').click(function(){
-                    if(confirm("Are you sure you want to empty local cache?")){
-                        window.localStorage.clear();
-                        window.refreshThemes();
-                    }
-                });
-
-                $('#exportSettings').click(function(){
-                    $('#jsonField').val(JSON.stringify(window.themeConfig));
-                });
-
-                $('#importSettings').click(function(){
-                    var text = $('#jsonField').val();
-                    $('#jsonField').val('');
-                    $.extend(true, window.themeConfig, JSON.parse(text));
-                    window.saveCache();
-                    window.renderItems();
-                    window.refreshThemes();
-                });
-
-                $('.textureLock').change(function(){
-                    var selector = $(this).parent().parent().find('.textureList');
-                    if(this.checked){
-                        selector.addClass('locked');
-                    }
-                    else{
-                        selector.removeClass('locked');
-                    }
-                });
-
-                $('#themeList').change(function(){
-                    var theme = $(this).val(),
-                        data = window.themeConfig.themes[theme]
-                        ;
-
-                    data = $.extend(true, data, {j:{}, w:{}});
-
-                    var rCache = window.reverseCache;
-
-                    $('#themeName').val(theme);
-                    $('#jetpackDiffuse').val(rCache[data.j.d]);
-                    $('#jetpackNormal').val(rCache[data.j.n]);
-                    $('#jetpackSpecular').val(rCache[data.j.s]);
-                    $('#wingsDiffuse').val(rCache[data.w.d]);
-                    $('#wingsNormal').val(rCache[data.w.n]);
-                    $('#wingsSpecular').val(rCache[data.w.s]);
-                });
-
-                $('#themeSave').click(function(){
-                    var name = $('#themeName'),
-                        nameVal = name.val().trim()
-
-                        ;
-
-                    if(nameVal === ""){
-                        alert("Cannot add theme, we need a name!");
-                    }
-                    else{
-                        var items = window.invCache.items;
-                        window.themeConfig.themes[nameVal] = {
-                            j:{
-                                d: items[$('#jetpackDiffuse').val()],
-                                n: items[$('#jetpackNormal').val()],
-                                s: items[$('#jetpackSpecular').val()]
-                            },
-                            w:{
-                                d: items[$('#wingsDiffuse').val()],
-                                n: items[$('#wingsNormal').val()],
-                                s: items[$('#wingsSpecular').val()]
-                            }
-                        };
-
-                        alert(nameVal + " saved!");
-                        window.refreshThemes();
-                        window.saveCache();
-                    }
-                });
-
-                $('#inventoryClear').click(function(){
-                    $('#inventoryList li input[type="checkbox"]')
-                        .removeAttr('checked');
-                });
-
-                $('#refreshInventory').click(function(){
-                    makeRequest({'request': 'getInventory'});
-                });
-
-                $('#inventoryFilter').on('keyup', function(){
-                    var val = $(this).val().trim(),
-                        search = '[searchKey*="'+val.toLowerCase()+'"]',
-                        selector = '#inventoryList li';
-                    $(selector).removeClass('hide');
-                    if(val !== ""){
-                        $(selector).addClass('hide');
-                        $(selector+search).removeClass('hide');
-                    }
-                });
-            });
-        </script>
+        <script src="main.js"></script>
+        <script src="module.js"></script>
     </body>
 </html>
