@@ -16,7 +16,8 @@
             body{
                 margin: 0;
                 padding: 0;
-                background-color: rgba(200,200,200,.5);
+                background-color: rgba(25,25,25,.95);
+                color: white;
             }
             .content{
                 max-width: 620px;
@@ -49,12 +50,11 @@
                 opacity: 0.3;
                 font-size: 10pt;
             }
-
-            .locked{
-                opacity: 0.75;
-                color: red;
-                background-color: rgba(200,0,0,0.3);
+            select, textarea, input{
+                background-color: rgba(50,50,50,0.95) !important;
+                color: white !important;
             }
+
 
             ul{
                 padding-left: 0;
@@ -116,70 +116,68 @@
         <div class="content" ng-app="inventoryManager" ng-controller="Manager as mgr">
             <h2>Inventory Manager</h2>
             <div class="import">
-                <textarea id="jsonField" placeholder="Put import JSON here"></textarea>
+                <textarea ng-model="fields.xfer.json" placeholder="Put import JSON here"></textarea>
             </div>
             <br>
             <div class="buttons">
-                <button id="refreshInventory" ng-click="refreshInventory()"><i class="fa fa-refresh"></i> Refresh Inventory</button>
-                <button id="importSettings"><i class="fa fa-arrow-circle-down"></i> Import</button>
-                <button id="exportSettings"><i class="fa fa-arrow-circle-up"></i> Export</button>
-                <button id="trashCache"><i class="fa fa-trash"></i> Empty Cache</button>
-                <!-- <button id="newTheme"><i class="fa fa-plus"></i> New</button> -->
+                <button class="btn btn-primary" ng-click="refreshInventory()"><i class="fa fa-refresh"></i> Refresh Inventory</button>
+                <button class="btn btn-primary" ng-click="importData()"><i class="fa fa-arrow-circle-down"></i> Import</button>
+                <button class="btn btn-primary" ng-click="exportData()"><i class="fa fa-arrow-circle-up"></i> Export</button>
+                <button class="btn btn-primary" ng-click="emptyCache()"><i class="fa fa-trash"></i> Empty Cache</button>
             </div>
             <br>
             <div class="panes">
                 <div class="pane">
-                    <input id="inventoryFilter" placeholder="Filter">
+                    <input class="form-control" ng-model="fields.filters.inv_search" placeholder="Filter">
                     <div>
-                        <button id="inventoryClear"><i class="fa fa-eraser"></i> Clear</button>
-                        <!-- <button id="inventoryAdd"><i class="fa fa-arrow-circle-right"></i> Add</button> -->
+                        <button class="btn btn-primary form-control" ng-click="clearFilter()"><i class="fa fa-eraser"></i> Clear</button>
                     </div>
                     <h4>Inventory</h4>
                     <ul id="inventoryList">
-                        <li ng-repeat="t in textures">
+                        <li ng-repeat="t in textures | filter:fields.filters.inv_search">
                             {{ t.getName() }}
                         </li>
                     </ul>
                 </div>
                 <div class="pane">
                     <div>
-                        <select id="themeList">
-                            <option ng-repeat="t in themes">
-                                {{ t.getName() }}
+                        <select class="form-control" ng-options="t.name for t in themes" ng-change="themeChanged(t)" ng-model="fields.theme.selected">
+                            <option>
+                                Select a theme...
                             </option>
                         </select>
-                        <button id="themeSave"><i class="fa fa-save"></i> Save</button>
+                        <button class="btn btn-primary form-control" ng-click="saveTheme()"><i class="fa fa-save"></i> Save</button>
                     </div>
 
                     <br>
-                    <input placeholder="Theme Name" ng-model="fields.theme.name">
+                    <input class="form-control" placeholder="Theme Name" ng-model="fields.theme.name">
                     <br>
                     <div>
                         <h4>Jetpack</h4>
                         <div>
                             <span>Diffuse</span>
-                            <input type="text" ng-model="fields.textures.jetpack.diffuse" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                            <input type="text" typeahead-watch-changes ng-model="fields.textures.jetpack.diffuse" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Normal</span>
-                            <input type="text" ng-model="fields.textures.jetpack.normal" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                            <input type="text" typeahead-watch-changes ng-model="fields.textures.jetpack.normal" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Specular</span>
-                            <input type="text" ng-model="fields.textures.jetpack.specular" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                            <input type="text" typeahead-watch-changes ng-model="fields.textures.jetpack.specular" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <h4>Wings</h4>
                         <div>
                             <span>Diffuse</span>
-                            <input type="text" ng-model="fields.textures.wing.diffuse" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                            <input type="text" typeahead-watch-changes ng-model="fields.textures.wing.diffuse" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Normal</span>
-                            <input type="text" ng-model="fields.textures.wing.normal" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                            <input type="text" typeahead-watch-changes ng-model="fields.textures.wing.normal" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <div>
                             <span>Specular</span>
-                            <input type="text" ng-model="fields.textures.wing.specular" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
+                            <input type="text" typeahead-watch-changes ng-model="fields.textures.wing.specular" typeahead="texture as texture.name for texture in getTextures() | filter:{name:$viewValue} | limitTo:8" class="form-control">
                         </div>
                         <h4>Icon</h4>
                         <div>
@@ -195,6 +193,7 @@
                 &copy; Mike Littman 2015
             </footer>
         </div>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/underscore.js/1.8.3/underscore-min.js"></script>
         <script src="/assets/js/libs/angular.min.js"></script>
         <script src="/assets/js/libs/ui-bootstrap-tpls-0.13.0.min.js"></script>
         <script src="/assets/js/libs/jquery-2.1.3.min.js"></script>
