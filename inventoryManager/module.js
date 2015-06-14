@@ -46,6 +46,10 @@ TextureCache.prototype.cache = function(texture){
         else{
             console.error("Textures must be something to be cached lol", texture);
         }
+        //Attempt a sort
+        this.sort(function (a,b) {
+            return a.id - b.id;
+        });
     }
 };
 TextureCache.prototype.assignByLocate = function (prop, query) {
@@ -242,7 +246,6 @@ ThemeList.prototype.export = function () {
     return exported;
 };
 ThemeList.prototype.import = function (obj, cb) {
-    console.log(obj);
     for(var name in obj){
         var entry = obj[name];
         if(entry)
@@ -456,13 +459,21 @@ angular.module('inventoryManager', ['ui.bootstrap'])
                 });
             }
             catch(e){
-                console.log(e);
+                console.error(e);
             }
         };
 
         $scope.clearFilter = function () {
             $scope.fields.filters.inv_search = '';
-        }
+        };
+
+        $scope.escapeExport = function () {
+            var source = $scope.fields.xfer.json;
+            if(source.indexOf("\\\"") === -1)
+                $scope.fields.xfer.json = source.replace(/"/g, '\\"');
+            else
+                $scope.fields.xfer.json = source.replace(/\\"/g, '"');
+        };
 
         $scope.themeChanged = function(t){
             //Load this theme

@@ -124,6 +124,7 @@
                 <button class="btn btn-primary" ng-click="importData()"><i class="fa fa-arrow-circle-down"></i> Import</button>
                 <button class="btn btn-primary" ng-click="exportData()"><i class="fa fa-arrow-circle-up"></i> Export</button>
                 <button class="btn btn-primary" ng-click="emptyCache()"><i class="fa fa-trash"></i> Empty Cache</button>
+                <button class="btn btn-primary" ng-click="escapeExport()"><i class="fa fa-toggle-on"></i> Escape</button>
             </div>
             <br>
             <div class="panes">
@@ -134,8 +135,8 @@
                     </div>
                     <h4>Inventory</h4>
                     <ul id="inventoryList">
-                        <li ng-repeat="t in textures | filter:fields.filters.inv_search">
-                            {{ t.getName() }}
+                        <li ng-repeat="t in textures | filter:fields.filters.inv_search track by t.name">
+                            {{ t.name }}
                         </li>
                     </ul>
                 </div>
