@@ -1,3 +1,5 @@
+GRID_WIDTH = 4;
+
 var makeRequest = function(params, callback){
     var request = window.location.hash.substr(1) + '?' + JSON.stringify(params);
     var script = document.createElement('script');
@@ -385,9 +387,9 @@ angular.module('inventoryManager', ['ui.bootstrap'])
                     ctx.drawImage(img, 0, 0, 256, 256);
 
                     if(icon && icon.index != null){
-                        var x = icon.index % 6,
-                            y = Math.floor(icon.index / 6),
-                            math = 256/6;
+                        var x = icon.index % GRID_WIDTH,
+                            y = Math.floor(icon.index / GRID_WIDTH),
+                            math = 256/GRID_WIDTH;
                         ctx.rect(x*math,y*math,math,math);
                         ctx.lineWidth = 2;
                         ctx.strokeStyle = 'red';
@@ -423,7 +425,7 @@ angular.module('inventoryManager', ['ui.bootstrap'])
             x -= $scope.canvas.offsetLeft;
             y -= $scope.canvas.offsetTop;
 
-            var math = 256/6;
+            var math = 256/GRID_WIDTH;
 
             x /= math;
             y /= math;
@@ -431,10 +433,10 @@ angular.module('inventoryManager', ['ui.bootstrap'])
             x = Math.floor(x);
             y = Math.floor(y);
 
-            if(x > 5)
-                x = 5;
-            if(y > 5)
-                y = 5;
+            if(x > (GRID_WIDTH - 1))
+                x = GRID_WIDTH - 1;
+            if(y > GRID_WIDTH - 1)
+                y = GRID_WIDTH - 1;
 
             //Save fields
             var icon = new Icon($scope.fields.textures.icon.name, x+y*6);
