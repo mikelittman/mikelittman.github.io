@@ -439,7 +439,7 @@ angular.module('inventoryManager', ['ui.bootstrap'])
                 y = GRID_WIDTH - 1;
 
             //Save fields
-            var icon = new Icon($scope.fields.textures.icon.name, x+y*6);
+            var icon = new Icon($scope.fields.textures.icon.name, x+y*GRID_WIDTH);
             $scope.fields.textures.icon.save = icon;
 
             //Redraw canvas with saved icon
