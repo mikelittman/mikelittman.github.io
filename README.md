@@ -1,2 +1,0 @@
-# mikelittman.github.io
-Homepage

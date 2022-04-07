@@ -1,0 +1,70 @@
+@font-face {
+  font-family: "Gidole";
+  src: url("/fonts/Gidole-Regular.ttf") format("ttf");
+}
+:root {
+  --text-color: black;
+  --bg-color: white;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --text-color: white;
+    --bg-color: black;
+  }
+}
+h1 {
+  text-align: center;
+}
+body {
+  font-family: Gidole, sans-serif;
+  color: var(--text-color);
+  background-color: var(--bg-color);
+
+  width: 320px;
+  margin: auto;
+  margin-top: 32px;
+}
+hr {
+  border-color: var(--text-color);
+}
+p {
+  border-left: 2px solid var(--text-color);
+  padding-left: 8px;
+}
+dl dt:not(:first-child) {
+  margin-top: 20px;
+}
+dl dt {
+  font-weight: bold;
+  margin-bottom: 4px;
+}
+dl dd {
+  font-size: 1em;
+  margin-left: 20px;
+}
+footer {
+  margin: 20px auto;
+}
+.socials {
+  text-align: center;
+}
+.socials .github-logo {
+  display: none;
+  width: 32px;
+  height: auto;
+}
+.socials .github-logo.light {
+  display: inline-block;
+}
+@media (prefers-color-scheme: dark) {
+  body {
+    color: var(--text-color);
+    background-color: var(--bg-color);
+  }
+  .socials .github-logo.light {
+    display: none;
+  }
+  .socials .github-logo.dark {
+    display: inline-block;
+  }
+}
