@@ -1,6 +1,6 @@
 @font-face {
-  font-family: "Gidole";
-  src: url("../fonts/Gidole-Regular.ttf") format("truetype");
+  font-family: "Bront";
+  src: url("../fonts/Bront.woff2") format("woff2");
 }
 
 /** Day/Night */
@@ -24,17 +24,25 @@ body {
   transition: background-color 1s ease, color 0.25s ease;
 }
 
+section {
+  margin-top: 8px;
+  padding: 4px;
+}
+
+ul {
+  padding: 1em;
+}
+
 h1 {
   text-align: center;
 }
 body {
-  font-family: "Gidole", sans-serif;
+  font-family: "Bront", sans-serif;
   color: var(--text-color);
   background-color: var(--bg-color);
 
   max-width: 320px;
   margin: auto;
-  margin-top: 32px;
 }
 
 hr {
