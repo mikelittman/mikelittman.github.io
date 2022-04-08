@@ -1,29 +1,42 @@
 @font-face {
   font-family: "Gidole";
-  src: url("/fonts/Gidole-Regular.ttf") format("ttf");
+  src: url("../fonts/Gidole-Regular.ttf") format("truetype");
 }
-:root {
+
+/** Day/Night */
+:root,
+:root[data-theme="light"] {
   --text-color: black;
   --bg-color: white;
 }
+:root[data-theme="dark"] {
+  --text-color: white;
+  --bg-color: black;
+}
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme="light"]) {
     --text-color: white;
     --bg-color: black;
   }
 }
+
+body {
+  transition: background-color 1s ease, color 0.25s ease;
+}
+
 h1 {
   text-align: center;
 }
 body {
-  font-family: Gidole, sans-serif;
+  font-family: "Gidole", sans-serif;
   color: var(--text-color);
   background-color: var(--bg-color);
 
-  width: 320px;
+  max-width: 320px;
   margin: auto;
   margin-top: 32px;
 }
+
 hr {
   border-color: var(--text-color);
 }
@@ -31,6 +44,7 @@ p {
   border-left: 2px solid var(--text-color);
   padding-left: 8px;
 }
+
 dl dt:not(:first-child) {
   margin-top: 20px;
 }
@@ -42,29 +56,30 @@ dl dd {
   font-size: 1em;
   margin-left: 20px;
 }
+
 footer {
   margin: 20px auto;
 }
 .socials {
   text-align: center;
 }
-.socials .github-logo {
-  display: none;
+.socials a {
+  margin: 8px;
+  text-decoration: none;
+}
+.socials img {
   width: 32px;
   height: auto;
 }
-.socials .github-logo.light {
-  display: inline-block;
+.socials .github-logo {
+  filter: none;
 }
 @media (prefers-color-scheme: dark) {
-  body {
-    color: var(--text-color);
-    background-color: var(--bg-color);
+  :root:not([data-theme="light"]) .socials .github-logo {
+    filter: invert(100%);
   }
-  .socials .github-logo.light {
-    display: none;
-  }
-  .socials .github-logo.dark {
-    display: inline-block;
-  }
+}
+:root[data-theme="dark"] .socials .github-logo,
+:root:not([data-theme="light"]) .socials .github-logo {
+  filter: invert(100%);
 }
