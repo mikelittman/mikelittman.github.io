@@ -1,6 +1,6 @@
 @font-face {
   font-family: "Bront";
-  src: url("../fonts/Bront.woff2") format("woff2");
+  src: url("/Bront.woff2") format("woff2");
 }
 
 /* #region day/night */
