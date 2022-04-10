@@ -87,7 +87,6 @@ footer {
     filter: invert(100%);
   }
 }
-:root[data-theme="dark"] .socials .github-logo,
-:root:not([data-theme="light"]) .socials .github-logo {
+:root[data-theme="dark"]:not([data-theme="light"]) .socials .github-logo {
   filter: invert(100%);
 }
