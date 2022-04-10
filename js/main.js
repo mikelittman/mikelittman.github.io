@@ -14,8 +14,12 @@ class YearDuration extends HTMLElement {
 
   connectedCallback() {
     const dataStart = this.getAttribute("data-start");
-    const years = this.diffYears(new Date(dataStart), new Date());
-    const durationElem = this.shadowRoot.querySelector(".duration");
+    const years = this.diffYears(
+      new Date(dataStart),
+      new Date()
+    );
+    const durationElem =
+      this.shadowRoot.querySelector(".duration");
     durationElem.textContent = `${years} years`;
   }
 
@@ -27,7 +31,9 @@ class YearDuration extends HTMLElement {
    */
   diffYears(start, end) {
     const diff = end.getTime() - start.getTime();
-    return Math.abs(Math.round(diff / (1000 * 60 * 60 * 24 * 365)));
+    return Math.abs(
+      Math.round(diff / (1000 * 60 * 60 * 24 * 365))
+    );
   }
 }
 
@@ -41,12 +47,12 @@ class DayNightToggle extends HTMLElement {
     this.attachShadow({ mode: "open" });
 
     const wrapper = document.createElement("div");
-    const style = document.createElement('style');
+    const style = document.createElement("style");
     style.textContent = `
     div {
       cursor: pointer;
       display: inline-block;
-    }`
+    }`;
 
     wrapper.addEventListener("click", () => {
       this.toggleMode();
@@ -60,7 +66,8 @@ class DayNightToggle extends HTMLElement {
    * @returns {boolean}
    */
   isDark() {
-    const currentTheme = document.documentElement.getAttribute("data-theme");
+    const currentTheme =
+      document.documentElement.getAttribute("data-theme");
     const hasTheme = currentTheme !== null;
     const themeDark = currentTheme === THEME_DARK;
     const preferDark = window.matchMedia(
@@ -75,7 +82,10 @@ class DayNightToggle extends HTMLElement {
    * @param {'dark' | 'light'} theme
    */
   setTheme(theme) {
-    document.documentElement.setAttribute("data-theme", theme);
+    document.documentElement.setAttribute(
+      "data-theme",
+      theme
+    );
   }
 
   toggleMode() {
@@ -85,7 +95,9 @@ class DayNightToggle extends HTMLElement {
 
   refreshDisplay() {
     const mode = this.isDark() ? "🌑" : "☀️";
-    this.shadowRoot.querySelector("div").textContent = `${mode}`;
+    this.shadowRoot.querySelector(
+      "div"
+    ).textContent = `${mode}`;
   }
 
   connectedCallback() {

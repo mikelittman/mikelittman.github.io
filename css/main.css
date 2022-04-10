@@ -3,7 +3,7 @@
   src: url("../fonts/Bront.woff2") format("woff2");
 }
 
-/** Day/Night */
+/* #region day/night */
 :root,
 :root[data-theme="light"] {
   --text-color: black;
@@ -18,17 +18,26 @@
     --text-color: white;
     --bg-color: black;
   }
+  :root:not([data-theme="light"]) .dark-invert {
+    filter: invert(100%);
+  }
 }
-
+.dark-invert {
+  filter: none;
+}
+:root[data-theme="dark"]:not([data-theme="light"])
+  .dark-invert {
+  filter: invert(100%);
+}
 body {
   transition: background-color 1s ease, color 0.25s ease;
 }
+/* #endregion **/
 
 section {
   margin-top: 8px;
   padding: 4px;
 }
-
 ul {
   padding: 1em;
 }
@@ -36,6 +45,7 @@ ul {
 h1 {
   text-align: center;
 }
+
 body {
   font-family: "Bront", sans-serif;
   color: var(--text-color);
@@ -45,11 +55,8 @@ body {
   margin: auto;
 }
 
-hr {
-  border-color: var(--text-color);
-}
 p {
-  border-left: 2px solid var(--text-color);
+  border-left: 2px solid color(var(--text-color) alpha(10%));
   padding-left: 8px;
 }
 
@@ -78,15 +85,4 @@ footer {
 .socials img {
   width: 32px;
   height: auto;
-}
-.socials .github-logo {
-  filter: none;
-}
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme="light"]) .socials .github-logo {
-    filter: invert(100%);
-  }
-}
-:root[data-theme="dark"]:not([data-theme="light"]) .socials .github-logo {
-  filter: invert(100%);
 }
