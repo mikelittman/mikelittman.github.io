@@ -34,6 +34,11 @@ body {
 }
 /* #endregion **/
 
+hr {
+  border-style: solid;
+  border-top: 1px solid var(--text-color);
+}
+
 section {
   margin-top: 8px;
   padding: 4px;
@@ -50,7 +55,6 @@ body {
   font-family: "Bront", sans-serif;
   color: var(--text-color);
   background-color: var(--bg-color);
-
   max-width: 320px;
   margin: auto;
 }
@@ -74,8 +78,6 @@ dl dd {
 
 footer {
   margin: 20px auto;
-}
-.socials {
   text-align: center;
 }
 .socials a {

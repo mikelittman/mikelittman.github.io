@@ -36,9 +36,7 @@ const Home: NextPage = () => {
         />
       </Head>
       <section>
-        <h1>
-          Mike Littman <DayNightToggle></DayNightToggle>
-        </h1>
+        <h1>Mike Littman</h1>
         <p>
           Software Developer with{" "}
           <YearDuration start="2015-01-01"></YearDuration>{" "}
@@ -48,10 +46,11 @@ const Home: NextPage = () => {
       <section>
         <h3>Topics of interest:</h3>
         <ul>
+          <li>IoT</li>
+          <li>Physical Security</li>
           <li>Distributed Systems</li>
           <li>Microservices</li>
           <li>Mobile Development</li>
-          <li>VR/AR</li>
         </ul>
       </section>
 
@@ -61,14 +60,19 @@ const Home: NextPage = () => {
           <dt>Languages</dt>
           <dd>TypeScript</dd>
           <dd>Java</dd>
+          <dd>C#</dd>
+          <dd>Python</dd>
+          <dd>C++</dd>
 
           <dt>Tools</dt>
           <dd>Git</dd>
           <dd>Docker</dd>
+          <dd>Kubernetes</dd>
 
           <dt>Service Providers</dt>
           <dd>AWS</dd>
           <dd>DigitalOcean</dd>
+          <dd>Azure</dd>
         </dl>
       </section>
 
@@ -93,6 +97,8 @@ const Home: NextPage = () => {
             <img src="/LI-In-Bug.png" alt="LinkedIn logo" />
           </a>
         </div>
+        <hr />
+        <DayNightToggle></DayNightToggle>
       </footer>
     </div>
   );
