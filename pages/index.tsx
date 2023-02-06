@@ -68,6 +68,10 @@ const Home: NextPage = () => {
           <dd>Git</dd>
           <dd>Docker</dd>
           <dd>Kubernetes</dd>
+          <dd>JIRA</dd>
+          <dd>Confluence</dd>
+          <dd>Azure DevOps</dd>
+          <dd>Kendis</dd>
 
           <dt>Service Providers</dt>
           <dd>AWS</dd>
