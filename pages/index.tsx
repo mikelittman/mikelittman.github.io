@@ -2,6 +2,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import { DayNightToggle } from "../components/dayNightToggle";
 import { YearDuration } from "../components/yearDuration";
+import Image from "next/image";
 
 const Home: NextPage = () => {
   return (
@@ -36,6 +37,18 @@ const Home: NextPage = () => {
         />
       </Head>
       <section>
+        <div
+          style={{
+            textAlign: "center",
+          }}
+        >
+          <Image
+            src={"/headshot.png"}
+            width={200}
+            height={200}
+            alt="Mike Littman Headshot"
+          />
+        </div>
         <h1>Mike Littman</h1>
         <p>
           Software Developer with{" "}
