@@ -3,6 +3,8 @@ import Head from "next/head";
 import { DayNightToggle } from "../components/dayNightToggle";
 import { YearDuration } from "../components/yearDuration";
 import Image from "next/image";
+import { GitHub } from "../icons/github";
+import { LinkedIn } from "../icons/linkedin";
 
 const Home: NextPage = () => {
   return (
@@ -100,18 +102,14 @@ const Home: NextPage = () => {
             target="_blank"
             rel="noreferrer"
           >
-            <img
-              src="/GitHub-Mark-Black.svg"
-              className="dark-invert"
-              alt="GitHub logo"
-            />
+            <GitHub />
           </a>
           <a
             href="https://www.linkedin.com/in/littman-mike/"
             target="_blank"
             rel="noreferrer"
           >
-            <img src="/LI-In-Bug.png" alt="LinkedIn logo" />
+            <LinkedIn />
           </a>
         </div>
         <hr />
