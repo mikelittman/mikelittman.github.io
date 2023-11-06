@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "bake": "cp CNAME out/ && touch out/.nojekyll",
     "start": "next start",
     "lint": "next lint",
     "export": "next export",
