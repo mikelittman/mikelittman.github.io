@@ -1,3 +1,5 @@
+"use client";
+
 import { useState, useEffect } from "react";
 
 import styles from "./dayNightToggle.module.css";
@@ -18,7 +20,7 @@ const isDark = (): boolean => {
   const hasTheme = currentTheme !== null;
   const themeDark = currentTheme === Theme.DARK;
   const preferDark = window.matchMedia(
-    "(prefers-color-scheme: dark)"
+    "(prefers-color-scheme: dark)",
   ).matches;
 
   return hasTheme ? themeDark : preferDark;
@@ -44,7 +46,7 @@ export function DayNightToggle() {
     if (theme !== null) {
       document.documentElement.setAttribute(
         "data-theme",
-        theme
+        theme,
       );
     }
   }, [theme]);

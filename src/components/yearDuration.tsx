@@ -1,3 +1,5 @@
+"use client";
+
 import { useEffect, useState } from "react";
 
 type Year = `${number}${number}${number}${number}`;
@@ -16,7 +18,7 @@ function diffYears(start: Date, end: Date): number {
 export function YearDuration({ start }: YearDurationProps) {
   const initialYears: number = diffYears(
     new Date(start),
-    new Date()
+    new Date(),
   );
   const [years, setYears] = useState(initialYears);
   useEffect(() => {
