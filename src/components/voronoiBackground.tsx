@@ -2,60 +2,128 @@
 
 import { useEffect, useRef } from "react";
 
-type Seed = {
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
-  hue: number;
-};
+const VERTEX_SHADER = `
+attribute vec2 a_position;
+varying vec2 v_uv;
 
-type RGB = {
-  r: number;
-  g: number;
-  b: number;
-};
+void main() {
+  v_uv = a_position * 0.5 + 0.5;
+  gl_Position = vec4(a_position, 0.0, 1.0);
+}
+`;
 
-const SEED_COUNT = 36;
-const BASE_HUES = [198, 214, 232, 246, 266, 292, 328];
+const FRAGMENT_SHADER = `
+precision highp float;
 
-function hslToRgb(h: number, s: number, l: number): RGB {
-  const c = (1 - Math.abs(2 * l - 1)) * s;
-  const hp = h / 60;
-  const x = c * (1 - Math.abs((hp % 2) - 1));
+varying vec2 v_uv;
+uniform vec2 u_resolution;
+uniform float u_time;
+uniform float u_theme;
+uniform float u_density;
 
-  let r1 = 0;
-  let g1 = 0;
-  let b1 = 0;
+vec2 hash2(vec2 p) {
+  vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
+  p3 += dot(p3, p3.yzx + 33.33);
+  return fract((p3.xx + p3.yz) * p3.zy);
+}
 
-  if (hp >= 0 && hp < 1) {
-    r1 = c;
-    g1 = x;
-  } else if (hp < 2) {
-    r1 = x;
-    g1 = c;
-  } else if (hp < 3) {
-    g1 = c;
-    b1 = x;
-  } else if (hp < 4) {
-    g1 = x;
-    b1 = c;
-  } else if (hp < 5) {
-    r1 = x;
-    b1 = c;
-  } else {
-    r1 = c;
-    b1 = x;
+void main() {
+  vec2 uv = v_uv;
+  float aspect = u_resolution.x / max(1.0, u_resolution.y);
+
+  vec2 centered = uv - 0.5;
+  mat2 rot = mat2(0.8623, -0.5064, 0.5064, 0.8623);
+  vec2 gridUv = rot * vec2(centered.x * aspect, centered.y);
+  gridUv += vec2(
+    sin((uv.y + u_time * 0.010) * 2.8),
+    cos((uv.x - u_time * 0.008) * 2.4)
+  ) * 0.035;
+  gridUv *= u_density;
+
+  vec2 i = floor(gridUv);
+  vec2 f = fract(gridUv);
+
+  float f1 = 10.0;
+  float f2 = 10.0;
+  for (int y = -2; y <= 2; y++) {
+    for (int x = -2; x <= 2; x++) {
+      vec2 n = vec2(float(x), float(y));
+      vec2 cell = i + n;
+      vec2 rnd = hash2(cell);
+
+      float speed = 0.12 + rnd.x * 0.16;
+      float phase = 6.2831853 * rnd.y;
+      vec2 offset = 0.5 + 0.35 * vec2(
+        cos(u_time * speed + phase),
+        sin(u_time * (speed * 0.86) + phase)
+      );
+
+      vec2 p = n + offset;
+      vec2 d = p - f;
+      float dist = dot(d, d);
+
+      if (dist < f1) {
+        f2 = f1;
+        f1 = dist;
+      } else if (dist < f2) {
+        f2 = dist;
+      }
+    }
   }
 
-  const m = l - c / 2;
+  float edge = smoothstep(0.0, 0.12, sqrt(max(0.0, f2)) - sqrt(max(0.0, f1)));
 
-  return {
-    r: Math.round((r1 + m) * 255),
-    g: Math.round((g1 + m) * 255),
-    b: Math.round((b1 + m) * 255),
-  };
+  vec2 flow = vec2(
+    sin((uv.y + u_time * 0.022) * 3.5),
+    cos((uv.x - u_time * 0.018) * 3.0)
+  ) * 0.008;
+
+  float hueBase = 0.56 + sin((uv.x + uv.y) * 2.0 + u_time * 0.025) * 0.012;
+  float sat = mix(0.42, 0.34, u_theme);
+  float light = mix(0.70, 0.28, u_theme);
+
+  float grad = dot(uv + flow, vec2(0.66, 0.78));
+  float smoothBand = sin((uv.y + u_time * 0.012) * 3.0) * 0.015;
+  float aurora = sin((uv.x * 1.4 - uv.y * 0.8 + u_time * 0.018) * 8.0) * 0.010;
+  light += grad * mix(0.082, 0.054, u_theme) + smoothBand + aurora;
+
+  vec3 base = vec3(hueBase, sat, clamp(light, 0.0, 1.0));
+
+  float c = base.z * base.y;
+  float h6 = mod(base.x * 6.0, 6.0);
+  float x = c * (1.0 - abs(mod(h6, 2.0) - 1.0));
+  vec3 rgb1;
+
+  if (h6 < 1.0) rgb1 = vec3(c, x, 0.0);
+  else if (h6 < 2.0) rgb1 = vec3(x, c, 0.0);
+  else if (h6 < 3.0) rgb1 = vec3(0.0, c, x);
+  else if (h6 < 4.0) rgb1 = vec3(0.0, x, c);
+  else if (h6 < 5.0) rgb1 = vec3(x, 0.0, c);
+  else rgb1 = vec3(c, 0.0, x);
+
+  vec3 rgb = rgb1 + vec3(base.z - c);
+
+  float vignette = smoothstep(1.0, 0.07, dot(uv - 0.5, uv - 0.5));
+  rgb *= mix(0.80, 1.07, vignette);
+
+  vec3 edgeColor = mix(vec3(0.87, 0.98, 1.00), vec3(0.16, 0.24, 0.35), u_theme);
+  rgb = mix(edgeColor, rgb, edge * 0.88 + 0.08);
+
+  vec3 tintA = mix(vec3(0.84, 0.96, 1.00), vec3(0.08, 0.13, 0.22), u_theme);
+  vec3 tintB = mix(vec3(0.68, 0.86, 1.00), vec3(0.12, 0.20, 0.31), u_theme);
+  rgb = mix(rgb, mix(tintA, tintB, uv.y), 0.26);
+
+  vec3 accentA = mix(vec3(0.60, 0.84, 1.00), vec3(0.20, 0.33, 0.52), u_theme);
+  vec3 accentB = mix(vec3(0.98, 0.86, 0.78), vec3(0.40, 0.30, 0.22), u_theme);
+  float accentMix = smoothstep(0.12, 0.88, uv.x + flow.x * 8.0);
+  rgb = mix(rgb, mix(accentA, accentB, accentMix), 0.10);
+
+  float grain = hash2(uv * u_resolution + vec2(u_time * 50.0, 0.0)).x - 0.5;
+  rgb += grain * mix(0.012, 0.008, u_theme);
+
+  gl_FragColor = vec4(clamp(rgb, 0.0, 1.0), 0.72);
 }
+`;
 
 function prefersDarkMode(): boolean {
   const explicitTheme = document.documentElement.getAttribute(
@@ -74,49 +142,141 @@ function prefersDarkMode(): boolean {
     .matches;
 }
 
+function createShader(
+  gl: WebGLRenderingContext,
+  type: number,
+  source: string,
+): WebGLShader | null {
+  const shader = gl.createShader(type);
+  if (!shader) {
+    return null;
+  }
+
+  gl.shaderSource(shader, source);
+  gl.compileShader(shader);
+
+  if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+    gl.deleteShader(shader);
+    return null;
+  }
+
+  return shader;
+}
+
+function createProgram(
+  gl: WebGLRenderingContext,
+  vertexSource: string,
+  fragmentSource: string,
+): WebGLProgram | null {
+  const vertex = createShader(gl, gl.VERTEX_SHADER, vertexSource);
+  const fragment = createShader(
+    gl,
+    gl.FRAGMENT_SHADER,
+    fragmentSource,
+  );
+
+  if (!vertex || !fragment) {
+    return null;
+  }
+
+  const program = gl.createProgram();
+  if (!program) {
+    gl.deleteShader(vertex);
+    gl.deleteShader(fragment);
+    return null;
+  }
+
+  gl.attachShader(program, vertex);
+  gl.attachShader(program, fragment);
+  gl.linkProgram(program);
+
+  gl.deleteShader(vertex);
+  gl.deleteShader(fragment);
+
+  if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+    gl.deleteProgram(program);
+    return null;
+  }
+
+  return program;
+}
+
 export function VoronoiBackground() {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
     const canvas = canvasRef.current;
-
     if (!canvas) {
       return;
     }
 
-    const ctx = canvas.getContext("2d", {
+    const gl = canvas.getContext("webgl", {
       alpha: true,
+      antialias: true,
+      depth: false,
+      stencil: false,
+      preserveDrawingBuffer: false,
     });
 
-    if (!ctx) {
+    if (!gl) {
       return;
     }
 
-    const tempCanvas = document.createElement("canvas");
-    const tempCtx = tempCanvas.getContext("2d");
-
-    if (!tempCtx) {
+    const program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER);
+    if (!program) {
       return;
     }
 
-    let width = 0;
-    let height = 0;
-    let gridWidth = 0;
-    let gridHeight = 0;
+    const positionAttrib = gl.getAttribLocation(program, "a_position");
+    const resolutionUniform = gl.getUniformLocation(
+      program,
+      "u_resolution",
+    );
+    const timeUniform = gl.getUniformLocation(program, "u_time");
+    const themeUniform = gl.getUniformLocation(
+      program,
+      "u_theme",
+    );
+    const densityUniform = gl.getUniformLocation(
+      program,
+      "u_density",
+    );
 
-    const seeds: Seed[] = Array.from(
-      {
-        length: SEED_COUNT,
-      },
-      (_, index) => ({
-        x: Math.random(),
-        y: Math.random(),
-        vx: (Math.random() - 0.5) * 0.0014,
-        vy: (Math.random() - 0.5) * 0.0014,
-        hue:
-          BASE_HUES[index % BASE_HUES.length] +
-          (Math.random() - 0.5) * 18,
-      }),
+    if (
+      positionAttrib < 0 ||
+      !resolutionUniform ||
+      !timeUniform ||
+      !themeUniform ||
+      !densityUniform
+    ) {
+      gl.deleteProgram(program);
+      return;
+    }
+
+    const quad = gl.createBuffer();
+    if (!quad) {
+      gl.deleteProgram(program);
+      return;
+    }
+
+    gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+    gl.bufferData(
+      gl.ARRAY_BUFFER,
+      new Float32Array([
+        -1,
+        -1,
+        1,
+        -1,
+        -1,
+        1,
+        -1,
+        1,
+        1,
+        -1,
+        1,
+        1,
+      ]),
+      gl.STATIC_DRAW,
     );
 
     let reducedMotion = window.matchMedia(
@@ -124,38 +284,29 @@ export function VoronoiBackground() {
     ).matches;
 
     const resize = () => {
-      const dpr = window.devicePixelRatio || 1;
-
-      width = window.innerWidth;
-      height = window.innerHeight;
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const width = window.innerWidth;
+      const height = window.innerHeight;
 
       canvas.width = Math.floor(width * dpr);
       canvas.height = Math.floor(height * dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
 
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-
-      const renderScale = reducedMotion ? 0.34 : 0.52;
-      gridWidth = Math.max(220, Math.floor(width * renderScale));
-      gridHeight = Math.max(140, Math.floor(height * renderScale));
-
-      tempCanvas.width = gridWidth;
-      tempCanvas.height = gridHeight;
+      gl.viewport(0, 0, canvas.width, canvas.height);
     };
 
     resize();
+
+    const reducedMotionQuery = window.matchMedia(
+      "(prefers-reduced-motion: reduce)",
+    );
 
     const onMotionPrefChange = (
       event: MediaQueryListEvent,
     ) => {
       reducedMotion = event.matches;
-      resize();
     };
-
-    const reducedMotionQuery = window.matchMedia(
-      "(prefers-reduced-motion: reduce)",
-    );
 
     reducedMotionQuery.addEventListener(
       "change",
@@ -166,182 +317,40 @@ export function VoronoiBackground() {
 
     let rafId = 0;
     let lastFrame = 0;
+    const start = performance.now();
 
-    const render = (timestamp: number) => {
-      const frameBudget = reducedMotion ? 180 : 70;
-
-      if (timestamp - lastFrame < frameBudget) {
+    const render = (now: number) => {
+      const frameBudget = reducedMotion ? 130 : 28;
+      if (now - lastFrame < frameBudget) {
         rafId = requestAnimationFrame(render);
         return;
       }
 
-      lastFrame = timestamp;
+      lastFrame = now;
 
-      for (const seed of seeds) {
-        seed.x += seed.vx;
-        seed.y += seed.vy;
+      gl.useProgram(program);
 
-        if (seed.x <= 0 || seed.x >= 1) {
-          seed.vx *= -1;
-          seed.x = Math.min(1, Math.max(0, seed.x));
-        }
-
-        if (seed.y <= 0 || seed.y >= 1) {
-          seed.vy *= -1;
-          seed.y = Math.min(1, Math.max(0, seed.y));
-        }
-      }
-
-      const isDark = prefersDarkMode();
-      const image = tempCtx.createImageData(gridWidth, gridHeight);
-      const px = image.data;
-
-      const palette = seeds.map((seed) =>
-        hslToRgb(
-          seed.hue,
-          isDark ? 0.42 : 0.5,
-          isDark ? 0.29 : 0.62,
-        ),
-      );
-
-      for (let y = 0; y < gridHeight; y++) {
-        for (let x = 0; x < gridWidth; x++) {
-          const pxNorm = x / gridWidth;
-          const pyNorm = y / gridHeight;
-
-          let nearest = 0;
-          let secondNearest = 0;
-          let thirdNearest = 0;
-          let minDist = Number.POSITIVE_INFINITY;
-          let secondMinDist = Number.POSITIVE_INFINITY;
-          let thirdMinDist = Number.POSITIVE_INFINITY;
-
-          for (let i = 0; i < seeds.length; i++) {
-            const dx = pxNorm - seeds[i].x;
-            const dy = pyNorm - seeds[i].y;
-            const dist = dx * dx + dy * dy;
-
-            if (dist < minDist) {
-              thirdMinDist = secondMinDist;
-              thirdNearest = secondNearest;
-              secondMinDist = minDist;
-              secondNearest = nearest;
-              minDist = dist;
-              nearest = i;
-            } else if (dist < secondMinDist) {
-              thirdMinDist = secondMinDist;
-              thirdNearest = secondNearest;
-              secondMinDist = dist;
-              secondNearest = i;
-            } else if (dist < thirdMinDist) {
-              thirdMinDist = dist;
-              thirdNearest = i;
-            }
-          }
-
-          const primaryColor = palette[nearest];
-          const secondaryColor = palette[secondNearest];
-          const tertiaryColor = palette[thirdNearest];
-          const primaryW = 1 / (minDist + 0.00008);
-          const secondaryW = 1 / (secondMinDist + 0.00008);
-          const tertiaryW = 1 / (thirdMinDist + 0.00008);
-          const wSum = primaryW + secondaryW + tertiaryW;
-          const blendStrength = isDark ? 0.22 : 0.32;
-          const w0 =
-            1 - blendStrength + (blendStrength * primaryW) / wSum;
-          const w1 = (blendStrength * secondaryW) / wSum;
-          const w2 = (blendStrength * tertiaryW) / wSum;
-          const radialX = x / gridWidth - 0.5;
-          const radialY = y / gridHeight - 0.5;
-          const vignette = radialX * radialX + radialY * radialY;
-          const lightShift = isDark
-            ? -Math.min(36, vignette * 56)
-            : -Math.min(20, vignette * 36);
-
-          const dataIndex = (y * gridWidth + x) * 4;
-          px[dataIndex] = Math.max(
-            0,
-            Math.min(
-              255,
-              primaryColor.r * w0 +
-                secondaryColor.r * w1 +
-                tertiaryColor.r * w2 +
-                lightShift +
-                6,
-            ),
-          );
-          px[dataIndex + 1] = Math.max(
-            0,
-            Math.min(
-              255,
-              primaryColor.g * w0 +
-                secondaryColor.g * w1 +
-                tertiaryColor.g * w2 +
-                lightShift +
-                5,
-            ),
-          );
-          px[dataIndex + 2] = Math.max(
-            0,
-            Math.min(
-              255,
-              primaryColor.b * w0 +
-                secondaryColor.b * w1 +
-                tertiaryColor.b * w2 +
-                lightShift +
-                8,
-            ),
-          );
-          px[dataIndex + 3] = isDark ? 80 : 96;
-        }
-      }
-
-      tempCtx.putImageData(image, 0, 0);
-
-      ctx.clearRect(0, 0, width, height);
-      ctx.imageSmoothingEnabled = true;
-      ctx.filter = "blur(0.55px) saturate(108%)";
-      ctx.drawImage(tempCanvas, 0, 0, width, height);
-      ctx.filter = "none";
-
-      const radialGlow = ctx.createRadialGradient(
-        width * 0.2,
-        height * 0.15,
-        width * 0.04,
-        width * 0.2,
-        height * 0.15,
-        width * 0.72,
-      );
-      radialGlow.addColorStop(
-        0,
-        isDark
-          ? "rgba(140, 168, 255, 0.1)"
-          : "rgba(95, 146, 238, 0.08)",
-      );
-      radialGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
-      ctx.fillStyle = radialGlow;
-      ctx.fillRect(0, 0, width, height);
-
-      const horizonTint = ctx.createLinearGradient(
+      gl.bindBuffer(gl.ARRAY_BUFFER, quad);
+      gl.enableVertexAttribArray(positionAttrib);
+      gl.vertexAttribPointer(
+        positionAttrib,
+        2,
+        gl.FLOAT,
+        false,
         0,
         0,
-        width,
-        height,
       );
-      horizonTint.addColorStop(
-        0,
-        isDark
-          ? "rgba(229, 152, 140, 0.04)"
-          : "rgba(246, 182, 148, 0.05)",
+
+      gl.uniform2f(
+        resolutionUniform,
+        canvas.width,
+        canvas.height,
       );
-      horizonTint.addColorStop(
-        1,
-        isDark
-          ? "rgba(118, 166, 255, 0.06)"
-          : "rgba(148, 188, 252, 0.07)",
-      );
-      ctx.fillStyle = horizonTint;
-      ctx.fillRect(0, 0, width, height);
+      gl.uniform1f(timeUniform, (now - start) / 1000);
+      gl.uniform1f(themeUniform, prefersDarkMode() ? 1 : 0);
+      gl.uniform1f(densityUniform, reducedMotion ? 16 : 28);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       rafId = requestAnimationFrame(render);
     };
@@ -355,6 +364,9 @@ export function VoronoiBackground() {
         "change",
         onMotionPrefChange,
       );
+
+      gl.deleteBuffer(quad);
+      gl.deleteProgram(program);
     };
   }, []);
 
