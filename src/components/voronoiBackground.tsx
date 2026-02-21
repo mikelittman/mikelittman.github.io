@@ -13,6 +13,7 @@ void main() {
 `;
 
 const FRAGMENT_SHADER = `
+#extension GL_OES_standard_derivatives : enable
 precision highp float;
 
 varying vec2 v_uv;
@@ -45,6 +46,7 @@ void main() {
 
   float f1 = 10.0;
   float f2 = 10.0;
+  float f3 = 10.0;
   for (int y = -2; y <= 2; y++) {
     for (int x = -2; x <= 2; x++) {
       vec2 n = vec2(float(x), float(y));
@@ -63,15 +65,32 @@ void main() {
       float dist = dot(d, d);
 
       if (dist < f1) {
+        f3 = f2;
         f2 = f1;
         f1 = dist;
       } else if (dist < f2) {
+        f3 = f2;
         f2 = dist;
+      } else if (dist < f3) {
+        f3 = dist;
       }
     }
   }
 
-  float edge = smoothstep(0.0, 0.12, sqrt(max(0.0, f2)) - sqrt(max(0.0, f1)));
+  float d1 = sqrt(max(0.000001, f1));
+  float d2 = sqrt(max(0.000001, f2));
+  float d3 = sqrt(max(0.000001, f3));
+  float edgeMetric = (d2 - d1) / max(d2, 0.0001);
+  float lineWidth = 0.060;
+  float aa = max(fwidth(edgeMetric), 0.0025);
+  float edgeLine = 1.0 - smoothstep(lineWidth - aa, lineWidth + aa, edgeMetric);
+
+  float tripleProximity = 1.0 - smoothstep(
+    0.065,
+    0.22,
+    (d3 - d1) / max(d3, 0.0001)
+  );
+  edgeLine *= 1.0 - tripleProximity * 0.72;
 
   vec2 flow = vec2(
     sin((uv.y + u_time * 0.022) * 3.5),
@@ -107,7 +126,7 @@ void main() {
   rgb *= mix(0.80, 1.07, vignette);
 
   vec3 edgeColor = mix(vec3(0.87, 0.98, 1.00), vec3(0.16, 0.24, 0.35), u_theme);
-  rgb = mix(edgeColor, rgb, edge * 0.88 + 0.08);
+  rgb = mix(rgb, edgeColor, edgeLine * 0.92);
 
   vec3 tintA = mix(vec3(0.84, 0.96, 1.00), vec3(0.08, 0.13, 0.22), u_theme);
   vec3 tintB = mix(vec3(0.68, 0.86, 1.00), vec3(0.12, 0.20, 0.31), u_theme);
@@ -221,6 +240,8 @@ export function VoronoiBackground() {
     if (!gl) {
       return;
     }
+
+    gl.getExtension("OES_standard_derivatives");
 
     const program = createProgram(gl, VERTEX_SHADER, FRAGMENT_SHADER);
     if (!program) {
