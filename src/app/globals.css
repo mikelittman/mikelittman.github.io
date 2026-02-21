@@ -160,7 +160,7 @@ body {
 .headshot-wrap {
   width: 116px;
   height: 116px;
-  border-radius: 18px;
+  border-radius: 999px;
   overflow: hidden;
   border: 1px solid var(--panel-border);
   box-shadow: 0 14px 30px -18px var(--shadow);
@@ -276,7 +276,8 @@ h1 {
   content: "";
   position: absolute;
   left: 0;
-  top: 0.55rem;
+  top: 50%;
+  transform: translateY(-50%);
   width: 0.5rem;
   height: 0.5rem;
   border-radius: 2px;

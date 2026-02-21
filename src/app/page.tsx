@@ -26,22 +26,25 @@ const focusAreas = [
 const capabilities = [
   "Agentic workflows and tool routing",
   "Prompt and retrieval architecture",
-  "Typed API integrations in TypeScript and Python",
+  "Typed API integrations in TypeScript and Swift",
   "Evaluation harnesses and regression checks",
   "Safe deployment patterns for production assistants",
   "Data and UX layers that make AI features usable",
 ];
 
 const stack = [
-  "OpenAI API",
   "Anthropic API",
-  "MCP Servers",
-  "TypeScript",
-  "Python",
-  "Next.js",
-  "Node.js",
-  "Docker",
   "AWS",
+  "Bun",
+  "Docker",
+  "iOS",
+  "Kubernetes",
+  "MCP Servers",
+  "Next.js",
+  "OpenAI API",
+  "Postgres",
+  "Swift",
+  "TypeScript",
 ];
 
 export default function Page() {

@@ -21,6 +21,7 @@ uniform vec2 u_resolution;
 uniform float u_time;
 uniform float u_theme;
 uniform float u_density;
+uniform vec2 u_mouse;
 
 vec2 hash2(vec2 p) {
   vec3 p3 = fract(vec3(p.xyx) * vec3(0.1031, 0.1030, 0.0973));
@@ -31,6 +32,13 @@ vec2 hash2(vec2 p) {
 void main() {
   vec2 uv = v_uv;
   float aspect = u_resolution.x / max(1.0, u_resolution.y);
+  vec2 mouse = vec2(u_mouse.x, 1.0 - u_mouse.y);
+  vec2 toMouse = uv - mouse;
+  float mouseDist = length(vec2(toMouse.x * aspect, toMouse.y));
+  float mouseField = exp(-mouseDist * 5.2);
+  float magnify = 1.0 - mouseField * 0.42;
+  uv = mouse + (uv - mouse) * magnify;
+  toMouse = uv - mouse;
 
   vec2 centered = uv - 0.5;
   mat2 rot = mat2(0.8623, -0.5064, 0.5064, 0.8623);
@@ -105,6 +113,7 @@ void main() {
   float smoothBand = sin((uv.y + u_time * 0.012) * 3.0) * 0.015;
   float aurora = sin((uv.x * 1.4 - uv.y * 0.8 + u_time * 0.018) * 8.0) * 0.010;
   light += grad * mix(0.082, 0.054, u_theme) + smoothBand + aurora;
+  light += mouseField * 0.025;
 
   vec3 base = vec3(hueBase, sat, clamp(light, 0.0, 1.0));
 
@@ -262,13 +271,15 @@ export function VoronoiBackground() {
       program,
       "u_density",
     );
+    const mouseUniform = gl.getUniformLocation(program, "u_mouse");
 
     if (
       positionAttrib < 0 ||
       !resolutionUniform ||
       !timeUniform ||
       !themeUniform ||
-      !densityUniform
+      !densityUniform ||
+      !mouseUniform
     ) {
       gl.deleteProgram(program);
       return;
@@ -334,6 +345,26 @@ export function VoronoiBackground() {
       onMotionPrefChange,
     );
 
+    let mouseTargetX = 0.5;
+    let mouseTargetY = 0.5;
+    let mouseX = 0.5;
+    let mouseY = 0.5;
+
+    const onPointerMove = (event: PointerEvent) => {
+      mouseTargetX = event.clientX / window.innerWidth;
+      mouseTargetY = event.clientY / window.innerHeight;
+    };
+
+    const onPointerLeave = () => {
+      mouseTargetX = 0.5;
+      mouseTargetY = 0.5;
+    };
+
+    window.addEventListener("pointermove", onPointerMove, {
+      passive: true,
+    });
+    window.addEventListener("pointerleave", onPointerLeave);
+
     window.addEventListener("resize", resize);
 
     let rafId = 0;
@@ -370,6 +401,9 @@ export function VoronoiBackground() {
       gl.uniform1f(timeUniform, (now - start) / 1000);
       gl.uniform1f(themeUniform, prefersDarkMode() ? 1 : 0);
       gl.uniform1f(densityUniform, reducedMotion ? 16 : 28);
+      mouseX += (mouseTargetX - mouseX) * 0.09;
+      mouseY += (mouseTargetY - mouseY) * 0.09;
+      gl.uniform2f(mouseUniform, mouseX, mouseY);
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
@@ -381,6 +415,8 @@ export function VoronoiBackground() {
     return () => {
       cancelAnimationFrame(rafId);
       window.removeEventListener("resize", resize);
+      window.removeEventListener("pointermove", onPointerMove);
+      window.removeEventListener("pointerleave", onPointerLeave);
       reducedMotionQuery.removeEventListener(
         "change",
         onMotionPrefChange,
